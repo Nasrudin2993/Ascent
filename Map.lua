@@ -23,18 +23,18 @@ function Map:init()
     self.sprites = generateQuads(self.spritesheet, self.tileWidth, self.tileHeight)
     -- Static variables defining the dimensions of each level and the gravity constant
     self.gravity = 15
-    self.mapWidth = 40
-    self.mapHeight = 300
+    self.mapWidth = 30
+    self.mapHeight = 200
 
     self.mapWidthPixels = self.mapWidth * self.tileWidth
     self.mapHeightPixels = self.mapHeight * self.mapWidth
 
     self.camX = 0
-    self.camY = self.mapHeight*32 - WINDOW_HEIGHT
+    self.camY = self.mapHeight*32 - VIRTUAL_HEIGHT
 
     self.tiles = {}
 
-
+    self.player = Player(self)
     -- fills the map with empty tiles, iterating through each line from the top downwards
     for y = 1, self.mapHeight do
         self.tiles[y] = {}
@@ -94,6 +94,8 @@ end
 
 function Map:update(dt)
 
+self.player:update(dt)
+
 end
 
 function Map:drawAnimatedTiles(tile, y, x, animTimer)
@@ -119,4 +121,5 @@ function Map:render()
         end
     end
     animTimer = animTimer + 6 / 60
+    self.player:render()
 end
