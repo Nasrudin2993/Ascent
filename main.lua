@@ -32,18 +32,11 @@ end
 function love.update(dt)
 
     if love.keyboard.isDown('w') then
-        map.camY = map.camY - 60
+        map.camY = math.min(0, -map.camY - 60)
     end
     if love.keyboard.isDown('s') then
-        map.camY = map.camY + 60
+        map.camY = math.max(map.mapHeight - WINDOW_HEIGHT, map.camY + 60)
     end
-    if love.keyboard.isDown('d') then
-        map.camX = map.camX + 60
-    end
-    if love.keyboard.isDown('a') then
-        map.camX = map.camX - 60
-    end
-
 end
 
 function love.draw()
