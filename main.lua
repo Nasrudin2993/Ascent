@@ -32,10 +32,10 @@ end
 function love.update(dt)
 
     if love.keyboard.isDown('w') then
-        map.camY = math.min(0, -map.camY - 60)
+        map.camY = math.max(0, map.camY - 30)
     end
     if love.keyboard.isDown('s') then
-        map.camY = math.max(map.mapHeight - WINDOW_HEIGHT, map.camY + 60)
+        map.camY = math.min(map.mapHeightPixels - WINDOW_HEIGHT, map.camY + 30)
     end
 end
 
