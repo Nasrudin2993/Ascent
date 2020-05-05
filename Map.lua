@@ -1,8 +1,11 @@
 -- CLass file for map, including generation, collision detection, and non-player sprite animation
 
-require 'Util'
+require 'QuadGenerator'
 
-Map = Class{}
+Map_mt = {__index = Map, __call = function(o, ...)
+            o:init(...)
+            return setmetatable(o, Map_mt)  end}
+Map = setmetatable({}, Map_mt)
 
 TILE_EMPTY = -1
 TILE_LEDGE = 1
@@ -13,9 +16,9 @@ TILE_PORTAL_1 = 5
 TILE_PORTAL_2 = 6
 animTimer = 0
 
-function Map:init()
+function Map:init(difficulty)
 
-    self.difficulty = 1 -- default value if not changed by main
+    self.difficulty = difficulty or 1 -- default value if not supplied
     self.tileWidth = 32
     self.tileHeight = 32
     -- passes in spritesheet into generateQuads() function, which returns a table of quads we can assign to the sprites table

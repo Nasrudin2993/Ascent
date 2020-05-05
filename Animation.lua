@@ -1,4 +1,7 @@
-Animation = Class{}
+Animation_mt = {__index = Animation, __call = function(o, ...)
+            o:init(...)
+            return setmetatable(o, Map_mt)  end}
+Animation = setmetatable({}, Animation_mt)
 
 function Animation:init(params)
 

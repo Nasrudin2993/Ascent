@@ -1,6 +1,9 @@
 require 'Map'
 
-Player = Class{}
+Player_mt = {__index = Player, __call = function (o, ...)
+            o:init(...)
+            return setmetatable(o, Player_mt) end}
+Player = setmetatable({}, Player_mt)
 
 local WALK_SPEED = 15
 local JUMP_VELOCITY = 400
@@ -38,7 +41,7 @@ self.animations = {
              love.graphics.newQuad(64, 0, 32, 64, self.texture:getDimensions()),
              love.graphics.newQuad(96, 0, 32, 64, self.texture:getDimensions()),
          },
-         interval = 0.4
+         interval = 0.3
     })
 }
 
