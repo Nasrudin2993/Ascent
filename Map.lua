@@ -33,7 +33,7 @@ function Map:init(difficulty)
     self.mapHeightPixels = self.mapHeight * self.mapWidth
 
     self.camX = 0
-    self.camY = self.mapHeight*32 - VIRTUAL_HEIGHT
+    self.camY = self.mapHeight*32 - WINDOW_HEIGHT
 
     self.tiles = {}
 
@@ -47,9 +47,9 @@ function Map:init(difficulty)
     end
 
     -- randomly generates map
-    local y = 4
+    local y = 18
     local startArea = 3
-    local endArea = 14
+    local endArea = 28
     -- generates fixed end area
     local middle = math.floor(self.mapWidth / 2 + 0.5)
     self.tiles[y-1][middle] = TILE_PORTAL_1
@@ -87,7 +87,7 @@ function Map:init(difficulty)
                 end
                 x = x + math.random(2, 8)
             end
-            y = y + 2
+            y = y + 3
     end
     for i = 1, self.mapWidth do
         self.tiles[self.mapHeight-1][i] = TILE_LEDGE
@@ -98,6 +98,7 @@ end
 function Map:update(dt)
 
 self.player:update(dt)
+self.camY = math.max(0, math.min(self.player.y - WINDOW_HEIGHT / 2, self.mapHeightPixels - WINDOW_HEIGHT/2))
 
 end
 
@@ -109,6 +110,28 @@ function Map:drawAnimatedTiles(tile, y, x, animTimer)
         else
             love.graphics.draw(self.spritesheet, self.sprites[tile], self.tileWidth * (x - 1), self.tileWidth * (y -1))
         end
+end
+
+function Map:getTile(y,x)
+    i = math.floor(y/self.tileHeight) + 1
+    j = math.floor(x/self.tileWidth) + 1
+    return self.tiles[i][j]
+end
+
+function Map:collisionCheck(t)
+
+collision_objects = {
+    TILE_LEDGE, TILE_BOX
+}
+
+for k,v in pairs(collision_objects) do
+    if t == v then
+        return true
+    end
+end
+
+return false
+
 end
 
 function Map:render()
