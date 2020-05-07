@@ -10,6 +10,7 @@ Player = setmetatable({}, Player_mt)
 local WALK_SPEED = 300
 local JUMP_HEIGHT = 550
 local GRAVITY = 15
+local ATTACK_RANGE = 50
 
 function Player:init(map)
 
@@ -33,6 +34,9 @@ self.dx = 0
 self.dy = 0
 self.y = map.tileHeight * (map.mapHeight - 2) - self.height -2
 self.x = map.tileWidth * 5
+self.health = 100
+self.weaponDamage = math.floor(40 / self.map.difficulty)
+self.attackTimer = 1
 
 self.currentFrame = nil
 
@@ -48,7 +52,7 @@ self.animations = {
          interval = 0.3
     })
 }
-self.movementStates = {
+self.actionStates = {
     ['idle'] = function (dt)
 
         if love.keyboard.isDown('a') then
@@ -119,11 +123,15 @@ end
 
 function Player:update(dt)
 
-    self.movementStates[self.state](dt)
+    self.actionStates[self.state](dt)
     self.currentFrame = self.animation:getCurrentFrame()
     self.animation:update(dt)
     self.x = math.max(0, math.min(self.map.mapWidthPixels - self.width, self.x + self.dx * dt))
     self.y = math.max(0, math.min(map.tileHeight * (map.mapHeight - 2) - self.height, self.y + self.dy * dt))
+    self.attackTimer = self.attackTimer + 1*dt
+    if math.abs(self.x - self.map.victoryPortal.x) < 10 and math.abs(self.y + self.height/2 - self.map.victoryPortal.y) < 10 then
+        self.map.victory = true
+    end
 end
 
 function Player:checkJumps()
@@ -137,13 +145,30 @@ function Player:checkJumps()
         end
 end
 
+function Player:attack()
+    if self.attackTimer >= 0.2 then
+        for k, v in pairs(self.map.robots) do
+            if self.direction == 'left' and math.abs(self.x - v.x - v.width)  < ATTACK_RANGE and math.abs(self.y - v.y) < ATTACK_RANGE/2 then
+                v.health = v.health - self.weaponDamage
+                self.attackTimer = 0
+            elseif self.direction == 'right' and math.abs(self.x + self.width - v.x) < ATTACK_RANGE and math.abs(self.y - v.y) < ATTACK_RANGE/2 then
+                v.health = v.health - self.weaponDamage
+                self.attackTimer = 0
+            end
+        end
+    end
+end
+
 function Player:checkCoinCollision()
     if self.map:getTile(self.y + self.height/2, self.x + self.width/2) == TILE_COIN_1 then
         self.map.tiles[math.floor((self.y + self.height/2) / self.map.tileHeight) + 1][math.floor((self.x + self.width/2) / self.map.tileWidth) + 1] = TILE_EMPTY
+        self.map.score = math.floor(self.map.score + 20*self.map.difficulty)
     elseif  self.map:getTile(self.y + self.height, self.x + self.width) == TILE_COIN_1 then
         self.map.tiles[math.floor((self.y + self.height) / self.map.tileHeight) + 1][math.floor((self.x + self.width) / self.map.tileWidth) + 1] = TILE_EMPTY
+        self.map.score = math.floor(self.map.score + 20*self.map.difficulty)
     elseif  self.map:getTile(self.y, self.x) == TILE_COIN_1 then
         self.map.tiles[math.floor(self.y / self.map.tileHeight) + 1][math.floor(self.x / self.map.tileWidth) + 1] = TILE_EMPTY
+        self.map.score = math.floor(self.map.score + 20*self.map.difficulty)
     end
 end
 
@@ -158,5 +183,6 @@ function Player:render()
     end
     love.graphics.draw(self.texture, self.currentFrame, math.floor(self.x + self.xOffset),
         math.floor(self.y + self.yOffset), 0, scaleX, 1, self.xOffset, self.yOffset)
+    love.graphics.print("Health: " .. self.health, self.map.camX + 10, self.map.camY + WINDOW_HEIGHT - 40)
 
 end

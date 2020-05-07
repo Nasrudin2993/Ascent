@@ -19,9 +19,11 @@ function love.load()
 
 level = 1
 
-map = Map()
+map = Map(1, 0)
 
 love.window.setTitle("Ascent")
+love.mouse.setVisible(false)
+love.mouse.setGrabbed(true)
 love.window.setMode(map.mapWidthPixels, WINDOW_HEIGHT, {
     fullscreen = false,
     resizable = false,
@@ -42,10 +44,18 @@ function love.keypressed(key)
     if key == 'space' then
         map.player:checkJumps()
     end
+    if key == 'lshift' then
+        map.player:attack()
+    end
+    if map.victory == true and (key == 'enter' or key == 'return') then
+        map = Map(map.difficulty*1.1, map.score)
+    end
+
 end
 
 function love.update(dt)
 
+if not map.victory then
     if love.keyboard.isDown('w') then
         map.camY = math.max(0, map.camY - 30)
     end
@@ -53,6 +63,9 @@ function love.update(dt)
         map.camY = math.min(map.mapHeightPixels - WINDOW_HEIGHT/2, map.camY + 30)
     end
     map:update(dt)
+
+end
+
 end
 
 function love.draw()
@@ -61,10 +74,4 @@ function love.draw()
     love.graphics.clear(70/255, 70/255, 70/255, 255/255)
     map:render()
     --push:apply('end')
-end
-
-function newMap(level)
-    map = Map()
-    map.difficulty = level / level * 1.1
-
 end

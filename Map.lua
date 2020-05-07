@@ -4,9 +4,11 @@ require 'QuadGenerator'
 
 require 'Robot'
 
-Map_mt = {__index = Map, __call = function(o, ...)
+Map_mt = {__index = Map, __call = function(m, ...)
+            local o = setmetatable({}, Map_mt)
+            Map_mt.__index = m
             o:init(...)
-            return setmetatable(o, Map_mt)  end}
+            return o end}
 Map = setmetatable({}, Map_mt)
 
 TILE_EMPTY = -1
@@ -18,9 +20,12 @@ TILE_PORTAL_1 = 5
 TILE_PORTAL_2 = 6
 animTimer = 0
 
-function Map:init(difficulty)
+function Map:init(difficulty, score)
 
-    self.difficulty = difficulty or 1 -- default value if not supplied
+
+    self.score = score
+
+    self.difficulty = difficulty -- default value if not supplied
     self.tileWidth = 32
     self.tileHeight = 32
     -- passes in spritesheet into generateQuads() function, which returns a table of quads we can assign to the sprites table
@@ -38,6 +43,7 @@ function Map:init(difficulty)
     self.camY = self.mapHeight*32 - WINDOW_HEIGHT
 
     self.tiles = {}
+    self.victory = false
 
     self.player = Player(self)
     self.robotCounter = 0
@@ -57,6 +63,7 @@ function Map:init(difficulty)
     local endArea = 28
     -- generates fixed end area
     local middle = math.floor(self.mapWidth / 2 + 0.5)
+    self.victoryPortal = {['y'] = (17-1)*self.tileHeight, ['x'] = (middle-1) * self.tileWidth}
     self.tiles[y-1][middle] = TILE_PORTAL_1
     i = 2
     while y < endArea do
@@ -78,7 +85,7 @@ function Map:init(difficulty)
                     local length = math.random(1, 10)
                     local coinGenerated = false
                     -- If ledge generated, 50% chance to generate a robot
-                    if math.random(2) == 1 then
+                    if math.random(2) == 1 and length > 3 and x + length < self.mapWidth then
                         self:generateRobot(y, x)
                     end
                     for i = 1, length do
@@ -108,6 +115,12 @@ function Map:update(dt)
 
 self.player:update(dt)
 self.camY = math.max(0, math.min(self.player.y - WINDOW_HEIGHT / 2, self.mapHeightPixels - WINDOW_HEIGHT/2))
+for k, v in pairs(self.robots) do
+    if v.isDead == true then table.remove(self.robots, k)
+    else
+    v:update(dt)
+    end
+end
 
 end
 
@@ -130,7 +143,7 @@ end
 function Map:collisionCheck(t)
 
 collision_objects = {
-    TILE_LEDGE, TILE_BOX
+    TILE_LEDGE, --TILE_BOX
 }
 
 for k,v in pairs(collision_objects) do
@@ -147,7 +160,7 @@ function Map:generateRobot(y, x)
     self.robotCounter = self.robotCounter + 1
     local yPixels = (y-1) *self.tileHeight
     local xPixels = (x-1) *self.tileWidth
-    self.robots[self.robotCounter] = Robot(yPixels, xPixels)
+    self.robots[self.robotCounter] = Robot(self, yPixels, xPixels)
 end
 
 function Map:render()
@@ -164,9 +177,10 @@ function Map:render()
     end
     for i = 1, #self.robots do
         self.robots[i]:render()
-        love.graphics.print(self.robots[i].y .. "   " .. self.robots[i].x, self.mapWidthPixels - 100, self.player.y + i*10)
+        --love.graphics.print(self.robots[i].y .. "   " .. self.robots[i].x, self.mapWidthPixels - 100, self.player.y + i*10)
     end
-    love.graphics.print(#self.robots .. self.robotCounter, self.player.x + 50, self.player.y)
+    --love.graphics.print(#self.robots .. self.robotCounter, self.player.x + 50, self.player.y)
     animTimer = animTimer + 6 / 60
     self.player:render()
+    love.graphics.print("SCORE: ".. self.score, self.camX + self.mapWidthPixels - 80, self.camY + WINDOW_HEIGHT - 40)
 end
