@@ -21,11 +21,11 @@ level = 1
 
 map = Map()
 
-    love.window.setTitle("Ascent")
-    love.window.setMode(map.mapWidthPixels, WINDOW_HEIGHT, {
-        fullscreen = false,
-        resizable = false,
-        vsync = true
+love.window.setTitle("Ascent")
+love.window.setMode(map.mapWidthPixels, WINDOW_HEIGHT, {
+    fullscreen = false,
+    resizable = false,
+    vsync = true
     })
 
     --[[push:setupScreen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
@@ -33,14 +33,13 @@ map = Map()
         resizable = true
     })--]]
 
-
-
 end
 
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
-    elseif key == 'space' then
+    end
+    if key == 'space' then
         map.player:checkJumps()
     end
 end

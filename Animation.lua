@@ -1,6 +1,8 @@
-Animation_mt = {__index = Animation, __call = function(o, ...)
+Animation_mt = {__index = Animation, __call = function(a, ...)
+            local o = setmetatable({}, Animation_mt)
+            Animation_mt.__index = a
             o:init(...)
-            return setmetatable(o, Map_mt)  end}
+            return o  end}
 Animation = setmetatable({}, Animation_mt)
 
 function Animation:init(params)

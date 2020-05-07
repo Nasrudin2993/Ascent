@@ -2,6 +2,8 @@
 
 require 'QuadGenerator'
 
+require 'Robot'
+
 Map_mt = {__index = Map, __call = function(o, ...)
             o:init(...)
             return setmetatable(o, Map_mt)  end}
@@ -38,6 +40,9 @@ function Map:init(difficulty)
     self.tiles = {}
 
     self.player = Player(self)
+    self.robotCounter = 0
+
+    self.robots = {}
     -- fills the map with empty tiles, iterating through each line from the top downwards
     for y = 1, self.mapHeight do
         self.tiles[y] = {}
@@ -72,6 +77,10 @@ function Map:init(difficulty)
                     self.tiles[y][x] = TILE_LEDGE
                     local length = math.random(1, 10)
                     local coinGenerated = false
+                    -- If ledge generated, 50% chance to generate a robot
+                    if math.random(2) == 1 then
+                        self:generateRobot(y, x)
+                    end
                     for i = 1, length do
                         if x + i < self.mapWidth-1 then
                             self.tiles[y][x+i] = TILE_LEDGE
@@ -83,7 +92,7 @@ function Map:init(difficulty)
                             end
                         end
                     end
-                    x = x + length
+                    x = x + length + 3
                 end
                 x = x + math.random(2, 8)
             end
@@ -134,6 +143,13 @@ return false
 
 end
 
+function Map:generateRobot(y, x)
+    self.robotCounter = self.robotCounter + 1
+    local yPixels = (y-1) *self.tileHeight
+    local xPixels = (x-1) *self.tileWidth
+    self.robots[self.robotCounter] = Robot(yPixels, xPixels)
+end
+
 function Map:render()
     if animTimer > 2 then animTimer = 0 end
     for y = 1, self.mapHeight do
@@ -146,6 +162,11 @@ function Map:render()
             end
         end
     end
+    for i = 1, #self.robots do
+        self.robots[i]:render()
+        love.graphics.print(self.robots[i].y .. "   " .. self.robots[i].x, self.mapWidthPixels - 100, self.player.y + i*10)
+    end
+    love.graphics.print(#self.robots .. self.robotCounter, self.player.x + 50, self.player.y)
     animTimer = animTimer + 6 / 60
     self.player:render()
 end

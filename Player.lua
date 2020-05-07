@@ -1,8 +1,10 @@
 require 'Map'
 
-Player_mt = {__index = Player, __call = function (o, ...)
+Player_mt = {__index = Player, __call = function (p, ...)
+            local o = setmetatable({}, Player_mt)
+            Player_mt.__index = p
             o:init(...)
-            return setmetatable(o, Player_mt) end}
+            return o end}
 Player = setmetatable({}, Player_mt)
 
 local WALK_SPEED = 300
@@ -48,6 +50,7 @@ self.animations = {
 }
 self.movementStates = {
     ['idle'] = function (dt)
+
         if love.keyboard.isDown('a') then
             self.dx = -WALK_SPEED
             self.direction = 'left'
@@ -63,6 +66,7 @@ self.movementStates = {
         end
     end,
         ['walking'] = function (dt)
+
             if love.keyboard.isDown('a') then
                 self.dx = -WALK_SPEED
                 self.direction = 'left'
@@ -93,10 +97,10 @@ self.movementStates = {
 
             self.dy = self.dy + GRAVITY
 
-            if self.dy > 0 and not love.keyboard.isDown('s') then
+            if self.dy >= 0 and not love.keyboard.isDown('s') then
                     if self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x)) or
                     self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x + self.width - 1)) then
-                        if self.y % self.map.tileHeight <= 15 then
+                        if self.y % self.map.tileHeight <= map.tileHeight/2 then
                             self.dy = 0
                             self.y = self.y-self.y % self.map.tileHeight
                             self.state = 'idle'
@@ -124,14 +128,13 @@ end
 
 function Player:checkJumps()
 
-    if self.state ~= 'jumping' and self.dy == 0 then
-        self.dy = -JUMP_HEIGHT
-        self.state = 'jumping'
-    elseif self.state == 'jumping' and self.doubleJump == true then
-        self.dy = -JUMP_HEIGHT*1.5
-        self.state = 'jumping'
-        self.doubleJump = false
-    end
+        if self.state ~= 'jumping' then
+            self.dy = -JUMP_HEIGHT
+            self.state = 'jumping'
+        elseif self.state == 'jumping' and self.doubleJump == true then
+            self.dy = -JUMP_HEIGHT*1.5
+            self.doubleJump = false
+        end
 end
 
 function Player:checkCoinCollision()
