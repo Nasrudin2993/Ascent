@@ -47,6 +47,8 @@ self.attackTimer = 1
 
 self.currentFrame = nil
 
+self.gameOverPlayed = false
+
 -- sets player animations by creating new instances of Animation class with chosen frames and interval for looping animations
 self.animations = {
     ['idle'] = Animation({
@@ -198,6 +200,11 @@ function Player:update(dt)
     -- run function in Player's actionState and get their currentFrame of Animation for their animationState. Also update their current animation with timer.
     if self.health <= 0 then
         self.state = 'dead'
+        self.isDead = true
+        if self.gameOverPlayed == false then
+            love.audio.play(playerDie)
+            self.gameOverPlayed = true
+        end
     end
     self.actionStates[self.state](dt)
     self.currentFrame = self.animation:getCurrentFrame()
@@ -222,30 +229,34 @@ function Player:checkJumps()
             self.state = 'jumping'
             self.animations['jumping']:restart()
             self.animation = self.animations['jumping']
+            love.audio.play(playerJump)
         -- if the player is jumping but has not double-jumped, then jump more powerfully and set doubleJump to false. This is set to true again when the player collides with the ground.
         elseif self.state == 'jumping' and self.doubleJump == true then
             self.dy = -JUMP_HEIGHT*1.5
             self.doubleJump = false
             self.state = 'jumping'
             self.animations['jumping']:restart()
+            love.audio.play(playerJump)
         end
 end
 
 -- The attack function is called by main when lShift is pressed. frequency of attacks is determined by attackTimer.
 function Player:attack()
     -- Check if enough time has passed since last attack
-    if self.attackTimer >= 0.2 and self.isDead == false then
+    if self.attackTimer >= 0.35 and self.isDead == false then
         -- Set animation to attacking
+        self.attackTimer = 0
         self.animations['attack']:restart()
         self.animation = self.animations['attack']
+        love.audio.play(playerAttack)
         -- Check if any robots are in attack range based on the direction the player is facing.
         for k, v in pairs(self.map.robots) do
             if self.direction == 'left' and math.abs(self.x - v.x - v.width)  < ATTACK_RANGE and math.abs(self.y - v.y) < ATTACK_RANGE/2 then
                 v.health = v.health - self.weaponDamage
-                self.attackTimer = 0
+                love.audio.play(playerHitRobot)
             elseif self.direction == 'right' and math.abs(self.x + self.width - v.x) < ATTACK_RANGE and math.abs(self.y - v.y) < ATTACK_RANGE/2 then
                 v.health = v.health - self.weaponDamage
-                self.attackTimer = 0
+                love.audio.play(playerHitRobot)
             end
         end
     end
@@ -266,15 +277,19 @@ function Player:checkCoinCollision()
     if self.map.tiles[y][x] == TILE_COIN_1 then
         self.map.tiles[y][x] = TILE_EMPTY
         self.map.score = math.floor(self.map.score + 20*self.map.difficulty)
+        love.audio.play(coinPickup)
     elseif self.map.tiles[y-1][x] == TILE_COIN_1 then
         self.map.tiles[y-1][x] = TILE_EMPTY
         self.map.score = math.floor(self.map.score + 20* self.map.difficulty)
+        love.audio.play(coinPickup)
     elseif self.map.tiles[y][x+1] == TILE_COIN_1 then
         self.map.tiles[y][x+1] = TILE_EMPTY
         self.map.score = math.floor(self.map.score + 20* self.map.difficulty)
+        love.audio.play(coinPickup)
     elseif self.map.tiles[y-1][x+1] == TILE_COIN_1 then
         self.map.tiles[y-1][x+1] = TILE_EMPTY
         self.map.score = math.floor(self.map.score + 20* self.map.difficulty)
+        love.audio.play(coinPickup)
     end
 end
 
@@ -289,5 +304,4 @@ function Player:render()
     end
     love.graphics.draw(self.texture, self.currentFrame, math.floor(self.x + self.xOffset),
         math.floor(self.y + self.yOffset), 0, scaleX, 1, self.xOffset, self.yOffset)
-    love.graphics.print("Health: " .. self.health, self.map.camX + 10, self.map.camY + WINDOW_HEIGHT - 40)
 end

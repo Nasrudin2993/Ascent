@@ -15,6 +15,19 @@ math.randomseed(os.time())
 
 love.graphics.setDefaultFilter('nearest', 'nearest')
 
+smallFont = love.graphics.newFont('fonts/Pixeled.ttf', 18)
+bigFont = love.graphics.newFont('fonts/Pixeled.ttf', 36)
+
+-- Load sound effects as audio sources
+coinPickup = love.audio.newSource('sounds/CoinPickup.wav', 'static')
+damageTaken = love.audio.newSource('sounds/DamageTaken.wav', 'static')
+playerAttack = love.audio.newSource('sounds/PlayerAttack.wav', 'static')
+playerDie = love.audio.newSource('sounds/PlayerDie.wav', 'static')
+playerHitRobot = love.audio.newSource('sounds/PlayerHitRobot.wav', 'static')
+playerJump = love.audio.newSource('sounds/PlayerJump.wav', 'static')
+robotAttack = love.audio.newSource('sounds/RobotAttack.wav', 'static')
+robotDie = love.audio.newSource('sounds/RobotDie.wav', 'static')
+
 function love.load()
 
 level = 1
@@ -72,6 +85,7 @@ function love.draw()
     --push:apply('start')
     love.graphics.translate(math.floor(-map.camX + 0.5), math.floor(-map.camY + 0.5))
     love.graphics.clear(35/255, 35/255, 35/255, 255/255)
+    love.graphics.setFont(smallFont)
     map:render()
     --push:apply('end')
 end

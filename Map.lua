@@ -187,5 +187,18 @@ function Map:render()
 
     animTimer = animTimer + 6 / 60
     self.player:render()
-    love.graphics.print("SCORE: ".. self.score, self.camX + self.mapWidthPixels - 80, self.camY + WINDOW_HEIGHT - 40)
+    love.graphics.print("HEALTH: " .. self.player.health, self.camX + 10, self.camY)
+    love.graphics.print("SCORE: ".. self.score, self.camX + self.mapWidthPixels - 130 - string.len(self.score) * 18, self.camY)
+    if self.victory then
+        love.graphics.setFont(bigFont)
+        love.graphics.printf("LEVEL COMPLETE!", self.camX, self.camY + 20, self.mapWidthPixels, 'center')
+        love.graphics.setFont(smallFont)
+        love.graphics.printf("PRESS 'ENTER' FOR NEXT LEVEL, 'ESC' TO QUIT!", self.camX, self.camY + 100, self.mapWidthPixels, 'center')
+    end
+    if self.player.isDead then
+        love.graphics.setFont(bigFont)
+        love.graphics.printf("GAME OVER", self.camX, self.camY + 100, self.mapWidthPixels, 'center')
+        love.graphics.setFont(smallFont)
+        love.graphics.printf("PRESS 'ESC' TO QUIT", self.camX, self.camY + 180, self.mapWidthPixels, 'center')
+    end
 end

@@ -23,7 +23,6 @@ self.health = math.floor(100 * self.map.difficulty)
 self.isDead = false
 
 self.attackTimer = 0
-self.attackCheck = false
 self.actionStates = {
     ['walking'] = function(dt)
         local playerCheck = nil
@@ -35,14 +34,9 @@ self.actionStates = {
             self.attackTimer = self.attackTimer + 1*dt
         else
             self.animation = self.animations['walking']
-            self.attackCheck = false
             self.attackTimer = 0.5
         end
-        if self:atEdge() == true then
-            if self.direction == 'right' then self.direction = 'left'
-            else self.direction = 'right'
-            end
-        end
+        self:checkEdge()
         if self.direction == 'right' then
             self.x = self.x + self.moveSpeed * dt
         else self.x = self.x - self.moveSpeed * dt
@@ -115,14 +109,16 @@ function Robot:update(dt)
     self.animation:update(dt)
     if self.health < 0 then
         self.state = 'dead'
+        love.audio.play(robotDie)
     end
 end
 
-function Robot:atEdge()
+function Robot:checkEdge()
 
-    if not self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x)) or not self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x + self.width)) then
-        return true
-    else return false
+    if self.direction == 'right' and not self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x + self.width)) then
+        self.direction = 'left'
+    elseif self.direction == 'left'and not self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x)) then
+        self.direction = 'right'
     end
 end
 
@@ -136,8 +132,10 @@ function Robot:checkForPlayer(dt)
 end
 
 function Robot:attackPlayer()
-    self.attackCheck = true
-    self.map.player.health = self.map.player.health - math.floor(10*map.difficulty)
+    if not self.map.player.isDead then
+        self.map.player.health = self.map.player.health - math.floor(10*map.difficulty)
+        love.audio.play(damageTaken)
+    end
 end
 
 function Robot:render()
