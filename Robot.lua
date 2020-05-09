@@ -15,63 +15,112 @@ self.moveSpeed = 100
 
 self.y = y - self.height or 0
 self.x = x or 0
-self.direction = 'right'
+self.direction = 'left'
 
 self.xOffset = 16
 self.yOffset = 32
 self.health = math.floor(100 * self.map.difficulty)
 self.isDead = false
 
-self.state = 'walking'
 self.attackTimer = 0
 self.attackCheck = false
 self.actionStates = {
-    ['walking'] = function(dt) end,
-    ['attacking'] = function(dt) end
+    ['walking'] = function(dt)
+        local playerCheck = nil
+        playerCheck = self:checkForPlayer(dt)
+        if playerCheck ~= nil then
+            self.direction = playerCheck
+            self.animations['attack']:restart()
+            self.state = 'attacking'
+            self.attackTimer = self.attackTimer + 1*dt
+        else
+            self.animation = self.animations['walking']
+            self.attackCheck = false
+            self.attackTimer = 0.5
+        end
+        if self:atEdge() == true then
+            if self.direction == 'right' then self.direction = 'left'
+            else self.direction = 'right'
+            end
+        end
+        if self.direction == 'right' then
+            self.x = self.x + self.moveSpeed * dt
+        else self.x = self.x - self.moveSpeed * dt
+        end
+
+    end,
+    ['attacking'] = function(dt)
+        if self.attackTimer >= 1 then
+            self.animation = self.animations['attack']
+            self:attackPlayer()
+            self.attackTimer = 0
+        else self.attackTimer = self.attackTimer + 1*dt
+        end
+        if not self:checkForPlayer(dt) then
+        self.state = 'walking'
+        end
+    end,
+    ['dead'] = function(dt)
+        self.animation = self.animations['death']
+        if self.currentFrame == self.animations['death'].frames[3] then
+            self.isDead = true
+        end
+    end
 }
+
+self.texture = love.graphics.newImage('graphics/Robots.png')
+self.frames = {}
+self.currentFrame = nil
+
+self.animations = {
+    ['walking'] = Animation({
+        texture = self.texture,
+        frames = {
+            love.graphics.newQuad(0, 0, 32, 64, self.texture:getDimensions()),
+            love.graphics.newQuad(32, 0, 32, 64, self.texture:getDimensions()),
+        },
+        interval = 0.5,
+        noRepeat = false
+    }),
+    ['attack'] = Animation({
+        texture = self.texture,
+        frames = {
+            love.graphics.newQuad(64, 0, 32, 64, self.texture:getDimensions()),
+            love.graphics.newQuad(96, 0, 32, 64, self.texture:getDimensions()),
+        },
+        interval = 0.2,
+        noRepeat = false
+    }),
+    ['death'] = Animation({
+        texture = self.texture,
+        frames = {
+            love.graphics.newQuad(0, 64, 32, 64, self.texture:getDimensions()),
+            love.graphics.newQuad(32, 64, 32, 64, self.texture:getDimensions()),
+            love.graphics.newQuad(64, 64, 32, 64, self.texture:getDimensions()),
+        },
+        interval = 0.2,
+        noRepeat = true
+    })
+}
+
+self.state = 'walking'
+self.animation = self.animations['walking']
 
 end
 
 function Robot:update(dt)
 
-    if self.isDead == false then
-
-        if self.health < 0 then
-            self.map.score = math.floor(self.map.score + 20*self.map.difficulty )
-            self.isDead = true
-        end
-        local playerCheck = nil
-        playerCheck = self:checkForPlayer(dt)
-        if playerCheck ~= nil then
-            self.direction = playerCheck
-            self.state = 'attacking'
-            self.attackTimer = self.attackTimer + 1*dt
-        else self.state = 'walking'
-            self.attackCheck = false
-            self.attackTimer = 0.5
-        end
-        if self.state == 'walking' then
-            if self:atEdge() == true then
-                if self.direction == 'right' then self.direction = 'left'
-                else self.direction = 'right'
-                end
-            end
-            if self.direction == 'right' then
-                self.x = self.x + self.moveSpeed * dt
-            else self.x = self.x - self.moveSpeed * dt
-            end
-        elseif self.state == 'attacking' then
-            if self.attackTimer >= 1 then
-                self:attackPlayer()
-                self.attackTimer = 0
-            end
-        end
+    self.actionStates[self.state](dt)
+    self.currentFrame = self.animation:getCurrentFrame()
+    self.animation:update(dt)
+    if self.health < 0 then
+        self.state = 'dead'
     end
 end
 
 function Robot:atEdge()
 
-    if self.map:getTile(self.y + self.height, self.x) ~= TILE_LEDGE or self.map:getTile(self.y + self.height, self.x + self.width) ~= TILE_LEDGE then
+    if not self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x)) or not self.map:collisionCheck(self.map:getTile(self.y + self.height, self.x + self.width)) then
         return true
     else return false
     end
@@ -93,11 +142,12 @@ end
 
 function Robot:render()
 
-if self.attackCheck == true then
-    love.graphics.print("Attack!", self.x + 50, self.y)
-end
-love.graphics.print(self.health, self.x - 50, self.y)
-
-love.graphics.rectangle('fill', self.x, self.y, self.width, self.height)
+    if self.direction == 'right' then
+        scaleX = -1
+    else
+        scaleX = 1
+    end
+    love.graphics.draw(self.texture, self.currentFrame, math.floor(self.x + self.xOffset),
+        math.floor(self.y + self.yOffset), 0, scaleX, 1, self.xOffset, self.yOffset)
 
 end

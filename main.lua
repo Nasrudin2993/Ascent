@@ -38,6 +38,7 @@ love.window.setMode(map.mapWidthPixels, WINDOW_HEIGHT, {
 end
 
 function love.keypressed(key)
+
     if key == 'escape' then
         love.event.quit()
     end
@@ -50,7 +51,6 @@ function love.keypressed(key)
     if map.victory == true and (key == 'enter' or key == 'return') then
         map = Map(map.difficulty*1.1, map.score)
     end
-
 end
 
 function love.update(dt)
@@ -71,7 +71,7 @@ end
 function love.draw()
     --push:apply('start')
     love.graphics.translate(math.floor(-map.camX + 0.5), math.floor(-map.camY + 0.5))
-    love.graphics.clear(70/255, 70/255, 70/255, 255/255)
+    love.graphics.clear(35/255, 35/255, 35/255, 255/255)
     map:render()
     --push:apply('end')
 end

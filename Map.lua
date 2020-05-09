@@ -12,12 +12,16 @@ Map_mt = {__index = Map, __call = function(m, ...)
 Map = setmetatable({}, Map_mt)
 
 TILE_EMPTY = -1
-TILE_LEDGE = 1
-TILE_BOX = 2
-TILE_COIN_1 = 3
-TILE_COIN_2 = 4
-TILE_PORTAL_1 = 5
-TILE_PORTAL_2 = 6
+TILE_LEDGE_1 = 1
+TILE_LEDGE_2 = 2
+TILE_LEDGE_3 = 3
+TILE_BOX_1 = 4
+TILE_BOX_2 = 5
+TILE_BOX_3 = 6
+TILE_COIN_1 = 7
+TILE_COIN_2 = 8
+TILE_PORTAL_1 = 9
+TILE_PORTAL_2 = 10
 animTimer = 0
 
 function Map:init(difficulty, score)
@@ -29,7 +33,7 @@ function Map:init(difficulty, score)
     self.tileWidth = 32
     self.tileHeight = 32
     -- passes in spritesheet into generateQuads() function, which returns a table of quads we can assign to the sprites table
-    self.spritesheet = love.graphics.newImage('graphics/spritesheet.png')
+    self.spritesheet = love.graphics.newImage('graphics/level_sprites.png')
     self.sprites = generateQuads(self.spritesheet, self.tileWidth, self.tileHeight)
     -- Static variables defining the dimensions of each level and the gravity constant
     self.gravity = 15
@@ -69,7 +73,7 @@ function Map:init(difficulty, score)
     while y < endArea do
         for x = -i, i do
             if middle+x > 0 and middle+x < self.mapWidth then
-                self.tiles[y][middle+x] = TILE_LEDGE
+                self.tiles[y][middle+x] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
             end
         end
         i = i + 1
@@ -81,7 +85,7 @@ function Map:init(difficulty, score)
             while x < self.mapWidth do
                 -- 20% chance to generate a ledge
                 if math.random(1, 100) <= math.floor((20 / self.difficulty) + 0.5) then
-                    self.tiles[y][x] = TILE_LEDGE
+                    self.tiles[y][x] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
                     local length = math.random(1, 10)
                     local coinGenerated = false
                     -- If ledge generated, 50% chance to generate a robot
@@ -90,12 +94,12 @@ function Map:init(difficulty, score)
                     end
                     for i = 1, length do
                         if x + i < self.mapWidth-1 then
-                            self.tiles[y][x+i] = TILE_LEDGE
+                            self.tiles[y][x+i] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
                             if math.random(10) == 1 and y - 1 > 1 and coinGenerated == false then
                                 self.tiles[y-1][x+i] = TILE_COIN_1
                                 coinGenerated = true
                             elseif math.random(10) == 1 and y - 1 > 1 then
-                                self.tiles[y-1][x+i] = TILE_BOX
+                                self.tiles[y-1][x+i] = math.random(TILE_BOX_1, TILE_BOX_3)
                             end
                         end
                     end
@@ -106,7 +110,7 @@ function Map:init(difficulty, score)
             y = y + 3
     end
     for i = 1, self.mapWidth do
-        self.tiles[self.mapHeight-1][i] = TILE_LEDGE
+        self.tiles[self.mapHeight-1][i] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
     end
     self.tiles[self.mapHeight-2][middle] = TILE_PORTAL_1
 end
@@ -116,7 +120,9 @@ function Map:update(dt)
 self.player:update(dt)
 self.camY = math.max(0, math.min(self.player.y - WINDOW_HEIGHT / 2, self.mapHeightPixels - WINDOW_HEIGHT/2))
 for k, v in pairs(self.robots) do
-    if v.isDead == true then table.remove(self.robots, k)
+    if v.isDead == true then
+        table.remove(self.robots, k)
+        self.score = self.score + math.floor(20*self.difficulty)
     else
     v:update(dt)
     end
@@ -143,7 +149,7 @@ end
 function Map:collisionCheck(t)
 
 collision_objects = {
-    TILE_LEDGE, --TILE_BOX
+    TILE_LEDGE_1, TILE_LEDGE_2, TILE_LEDGE_3
 }
 
 for k,v in pairs(collision_objects) do
@@ -164,6 +170,9 @@ function Map:generateRobot(y, x)
 end
 
 function Map:render()
+    for i = 1, #self.robots do
+        self.robots[i]:render()
+    end
     if animTimer > 2 then animTimer = 0 end
     for y = 1, self.mapHeight do
         for x = 1, self.mapWidth do
@@ -175,11 +184,7 @@ function Map:render()
             end
         end
     end
-    for i = 1, #self.robots do
-        self.robots[i]:render()
-        --love.graphics.print(self.robots[i].y .. "   " .. self.robots[i].x, self.mapWidthPixels - 100, self.player.y + i*10)
-    end
-    --love.graphics.print(#self.robots .. self.robotCounter, self.player.x + 50, self.player.y)
+
     animTimer = animTimer + 6 / 60
     self.player:render()
     love.graphics.print("SCORE: ".. self.score, self.camX + self.mapWidthPixels - 80, self.camY + WINDOW_HEIGHT - 40)

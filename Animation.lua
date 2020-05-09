@@ -10,6 +10,7 @@ function Animation:init(params)
     self.texture = params.texture
     self.frames = params.frames or {}
     self.interval = params.interval or 0.05
+    self.noRepeat = params.noRepeat or false
     self.timer = 0
 
     self.currentFrame = 1
@@ -21,6 +22,7 @@ end
 
 function Animation:restart()
     self.timer = 0
+
     self.currentFrame = 1
 end
 
@@ -30,6 +32,8 @@ function Animation:update(dt)
         self.timer = self.timer - self.interval
         if self.currentFrame ~= #self.frames then
             self.currentFrame = self.currentFrame + 1
+        elseif self.noRepeat == true then
+            return
         else
             self.currentFrame = 1
         end
