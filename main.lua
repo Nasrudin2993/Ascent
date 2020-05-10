@@ -4,8 +4,6 @@ WINDOW_HEIGHT = 720
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
-push = require 'push'
-
 require 'Animation'
 require 'Map'
 require 'Player'
@@ -15,6 +13,7 @@ math.randomseed(os.time())
 
 love.graphics.setDefaultFilter('nearest', 'nearest')
 
+-- Font courtesy of dafont.com. Source: https://www.dafont.com/pixeled.font
 smallFont = love.graphics.newFont('fonts/Pixeled.ttf', 18)
 bigFont = love.graphics.newFont('fonts/Pixeled.ttf', 36)
 
@@ -27,8 +26,12 @@ playerHitRobot = love.audio.newSource('sounds/PlayerHitRobot.wav', 'static')
 playerJump = love.audio.newSource('sounds/PlayerJump.wav', 'static')
 robotAttack = love.audio.newSource('sounds/RobotAttack.wav', 'static')
 robotDie = love.audio.newSource('sounds/RobotDie.wav', 'static')
+mainMusic = love.audio.newSource('sounds/Ascent.wav', 'static')
 
 function love.load()
+
+mainMusic:setLooping(true)
+mainMusic:play()
 
 level = 1
 
@@ -42,11 +45,6 @@ love.window.setMode(map.mapWidthPixels, WINDOW_HEIGHT, {
     resizable = false,
     vsync = true
     })
-
-    --[[push:setupScreen(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
-        fullscreen = true,
-        resizable = true
-    })--]]
 
 end
 
@@ -82,10 +80,8 @@ end
 end
 
 function love.draw()
-    --push:apply('start')
     love.graphics.translate(math.floor(-map.camX + 0.5), math.floor(-map.camY + 0.5))
     love.graphics.clear(35/255, 35/255, 35/255, 255/255)
     love.graphics.setFont(smallFont)
     map:render()
-    --push:apply('end')
 end

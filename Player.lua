@@ -20,8 +20,6 @@ function Player:init(map)
 -- stores instance of map in player and sets attributes
 self.map = map
 
-self.x = 0
-self.y = 0
 
 self.width = 32
 self.height = 64
@@ -39,7 +37,7 @@ self.doubleJump = true
 self.dx = 0
 self.dy = 0
 self.y = map.tileHeight * (map.mapHeight - 2) - self.height -2
-self.x = map.tileWidth * 5
+self.x = math.floor(self.map.mapWidthPixels / 2 - self.map.tileWidth)
 self.health = 100
 self.isDead = false
 self.weaponDamage = math.floor(40 / self.map.difficulty)

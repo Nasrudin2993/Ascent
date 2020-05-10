@@ -84,7 +84,7 @@ function Map:init(difficulty, score)
         local x = 1
             while x < self.mapWidth do
                 -- 20% chance to generate a ledge
-                if math.random(1, 100) <= math.floor((20 / self.difficulty) + 0.5) then
+                if math.random(1, 100) <= 20 then
                     self.tiles[y][x] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
                     local length = math.random(1, 10)
                     local coinGenerated = false
