@@ -36,7 +36,7 @@ mainMusic:play()
 
 level = 1
 
-map = Map(1, 0)
+map = Map(1, 0, level)
 
 love.window.setTitle("Ascent")
 love.mouse.setVisible(false)
@@ -61,10 +61,8 @@ function love.keypressed(key)
         map.player:attack()
     end
     if map.victory == true and (key == 'enter' or key == 'return') then
-        map = Map(map.difficulty*1.1, map.score)
-    end
-    if map.victory == true and key == 'escape' then
-        getHighScores()
+        level = level + 1
+        map = Map(map.difficulty*1.1, map.score, level)
     end
 end
 

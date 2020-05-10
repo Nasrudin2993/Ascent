@@ -24,11 +24,11 @@ TILE_PORTAL_1 = 9
 TILE_PORTAL_2 = 10
 animTimer = 0
 
-function Map:init(difficulty, score)
+function Map:init(difficulty, score, level)
 
 
     self.score = score
-
+    self.level = level
     self.difficulty = difficulty -- default value if not supplied
     self.tileWidth = 32
     self.tileHeight = 32
@@ -193,6 +193,7 @@ function Map:render()
     animTimer = animTimer + 6 / 60
     self.player:render()
     love.graphics.print("HEALTH: " .. self.player.health, self.camX + 10, self.camY)
+    love.graphics.printf("LEVEL: " .. self.level, self.camX, self.camY, self.mapWidthPixels, 'center')
     love.graphics.print("SCORE: ".. self.score, self.camX + self.mapWidthPixels - 130 - string.len(self.score) * 18, self.camY)
     if self.difficulty == 1 then
         love.graphics.setFont(smallFont)
