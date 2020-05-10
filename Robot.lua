@@ -44,7 +44,7 @@ self.actionStates = {
 
     end,
     ['attacking'] = function(dt)
-        if self.attackTimer >= 1 then
+        if self.attackTimer >= 0.8/self.map.difficulty then
             self.animation = self.animations['attack']
             self:attackPlayer()
             self.attackTimer = 0
@@ -107,7 +107,7 @@ function Robot:update(dt)
     self.actionStates[self.state](dt)
     self.currentFrame = self.animation:getCurrentFrame()
     self.animation:update(dt)
-    if self.health < 0 then
+    if self.health <= 0 then
         self.state = 'dead'
         love.audio.play(robotDie)
     end
@@ -123,7 +123,7 @@ function Robot:checkEdge()
 end
 
 function Robot:checkForPlayer(dt)
-    if math.abs(self.x - self.map.player.x - self.map.player.width) < self.width/2 and math.abs(self.y - self.map.player.y) < self.height/2 then
+    if math.abs(self.x - self.map.player.x - self.map.player.width/2) < self.width/2 and math.abs(self.y - self.map.player.y) < self.height/2 then
         return 'left'
     elseif math.abs(self.x + self.width - self.map.player.x) < self.width/2 and math.abs(self.y - self.map.player.y) < self.height/2 then
         return 'right'

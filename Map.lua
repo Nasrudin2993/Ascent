@@ -80,22 +80,25 @@ function Map:init(difficulty, score)
         y = y + 3
     end
     -- iterates through map tile matrix, generating random ledges
+    local ledgeGenerated = 0
     while y < self.mapHeight - startArea do
         local x = 1
             while x < self.mapWidth do
                 -- 20% chance to generate a ledge
-                if math.random(1, 100) <= 20 then
+                if math.random(1, 100) <= 20 or ledgeGenerated > 10 then
                     self.tiles[y][x] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
+                    ledgeGenerated = 0
                     local length = math.random(1, 10)
                     local coinGenerated = false
                     -- If ledge generated, 50% chance to generate a robot
-                    if math.random(2) == 1 and length > 3 and x + length < self.mapWidth then
+                    if math.random(100) <= 50*self.difficulty and length > 3 and x + length < self.mapWidth then
                         self:generateRobot(y, x)
                     end
                     for i = 1, length do
                         if x + i < self.mapWidth-1 then
                             self.tiles[y][x+i] = math.random(TILE_LEDGE_1, TILE_LEDGE_3)
-                            if math.random(10) == 1 and y - 1 > 1 and coinGenerated == false then
+                            -- 10% Chance to generate Coin
+                            if math.random(100) <= 10*self.difficulty and y - 1 > 1 and coinGenerated == false then
                                 self.tiles[y-1][x+i] = TILE_COIN_1
                                 coinGenerated = true
                             elseif math.random(10) == 1 and y - 1 > 1 then
@@ -104,6 +107,8 @@ function Map:init(difficulty, score)
                         end
                     end
                     x = x + length + 3
+                else
+                    ledgeGenerated = ledgeGenerated + 1
                 end
                 x = x + math.random(2, 8)
             end
@@ -189,6 +194,11 @@ function Map:render()
     self.player:render()
     love.graphics.print("HEALTH: " .. self.player.health, self.camX + 10, self.camY)
     love.graphics.print("SCORE: ".. self.score, self.camX + self.mapWidthPixels - 130 - string.len(self.score) * 18, self.camY)
+    if self.difficulty == 1 then
+        love.graphics.setFont(smallFont)
+        love.graphics.print("'A' AND 'D' TO MOVE \n 'SPACE' TO JUMP", 10, self.mapHeightPixels + WINDOW_HEIGHT/2 - 120)
+        love.graphics.printf("'SHIFT' TO ATTACK \n 'S' TO DROP", 0, self.mapHeightPixels + WINDOW_HEIGHT/2 - 120, self.mapWidthPixels-10, 'right')
+    end
     if self.victory then
         love.graphics.setFont(bigFont)
         love.graphics.printf("LEVEL COMPLETE!", self.camX, self.camY + 20, self.mapWidthPixels, 'center')

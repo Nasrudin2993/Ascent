@@ -27,6 +27,7 @@ playerJump = love.audio.newSource('sounds/PlayerJump.wav', 'static')
 robotAttack = love.audio.newSource('sounds/RobotAttack.wav', 'static')
 robotDie = love.audio.newSource('sounds/RobotDie.wav', 'static')
 mainMusic = love.audio.newSource('sounds/Ascent.wav', 'static')
+levelComplete = love.audio.newSource('sounds/LevelComplete.wav', 'static')
 
 function love.load()
 
@@ -50,7 +51,7 @@ end
 
 function love.keypressed(key)
 
-    if key == 'escape' then
+    if map.victory == false and key == 'escape' then
         love.event.quit()
     end
     if key == 'space' then
@@ -61,6 +62,9 @@ function love.keypressed(key)
     end
     if map.victory == true and (key == 'enter' or key == 'return') then
         map = Map(map.difficulty*1.1, map.score)
+    end
+    if map.victory == true and key == 'escape' then
+        getHighScores()
     end
 end
 
@@ -74,9 +78,7 @@ if not map.victory then
         map.camY = math.min(map.mapHeightPixels - WINDOW_HEIGHT/2, map.camY + 30)
     end
     map:update(dt)
-
 end
-
 end
 
 function love.draw()

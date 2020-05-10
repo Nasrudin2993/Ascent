@@ -13,6 +13,7 @@ local WALK_SPEED = 300
 local JUMP_HEIGHT = 550
 local GRAVITY = 15
 local ATTACK_RANGE = 50
+local WEAPON_DAMAGE = 100
 
 -- Initialises an instance of the player class and returns it when Player is called as a function
 function Player:init(map)
@@ -40,12 +41,13 @@ self.y = map.tileHeight * (map.mapHeight - 2) - self.height -2
 self.x = math.floor(self.map.mapWidthPixels / 2 - self.map.tileWidth)
 self.health = 100
 self.isDead = false
-self.weaponDamage = math.floor(40 / self.map.difficulty)
+self.weaponDamage = math.floor(WEAPON_DAMAGE / self.map.difficulty)
 self.attackTimer = 1
 
 self.currentFrame = nil
 
 self.gameOverPlayed = false
+self.levelCompletePlayed = false
 
 -- sets player animations by creating new instances of Animation class with chosen frames and interval for looping animations
 self.animations = {
@@ -183,6 +185,8 @@ self.actionStates = {
         end,
         -- Death state - Nothing happens for now
         ['dead'] = function(dt)
+            self.dx = 0
+            self.dy = 0
             self.animation = self.animations['death']
         end
 }
@@ -197,6 +201,7 @@ function Player:update(dt)
 
     -- run function in Player's actionState and get their currentFrame of Animation for their animationState. Also update their current animation with timer.
     if self.health <= 0 then
+        self.health = 0
         self.state = 'dead'
         self.isDead = true
         if self.gameOverPlayed == false then
@@ -216,6 +221,8 @@ function Player:update(dt)
     -- Check if the player is in contact with the victory portal. If true, this will result in the victory state being initialised.
     if math.abs(self.x - self.map.victoryPortal.x) < 10 and math.abs(self.y + self.height/2 - self.map.victoryPortal.y) < 10 then
         self.map.victory = true
+        levelComplete:play()
+        self.levelCompletePlayed = true
     end
 end
 
